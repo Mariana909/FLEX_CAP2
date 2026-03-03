@@ -25,7 +25,8 @@ int popfile(void);
                                     BEGIN IFILE; }
 
 
-<IFILE>[^ \t\n\">\]+    { /* En estado IFILE: lee el nombre del archivo */
+<IFILE>[^ \t\n\">\]+    { 
+    /* En estado IFILE: lee el nombre del archivo */
     { int c;
       while((c = input()) && c != '\n') ;   /* consume el resto de la línea */
     }
@@ -36,13 +37,15 @@ int popfile(void);
 }
 
 
-<IFILE>.|\n    { /* Input inválido dentro de IFILE */
+<IFILE>.|\n    { 
+    /* Input inválido dentro de IFILE */
     fprintf(stderr, "%4d bad include line\n", yylineno);
     yyterminate();
 }
 
 
-<<EOF>>    { /* Al llegar al EOF de cualquier archivo: hacer pop del stack */
+<<EOF>>    { 
+            /* Al llegar al EOF de cualquier archivo: hacer pop del stack */
             if(!popfile()) yyterminate(); }
 
 
