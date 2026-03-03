@@ -19,11 +19,13 @@ int popfile(void);
 
 %%
 
-/* Detecta "#include" hasta la comilla o < que precede al nombre */
-^"#"[ \t]*include[ \t]*[\"\<]    { BEGIN IFILE; }
 
-/* En estado IFILE: lee el nombre del archivo */
-<IFILE>[^ \t\n\">\]+    {
+^"#"[ \t]*include[ \t]*[\"\<]    { 
+                /* Detecta "#include" hasta la comilla o < que precede al nombre */
+                                    BEGIN IFILE; }
+
+
+<IFILE>[^ \t\n\">\]+    { /* En estado IFILE: lee el nombre del archivo */
     { int c;
       while((c = input()) && c != '\n') ;   /* consume el resto de la línea */
     }
@@ -33,16 +35,17 @@ int popfile(void);
     BEGIN INITIAL;
 }
 
-/* Input inválido dentro de IFILE */
-<IFILE>.|\n    {
+
+<IFILE>.|\n    { /* Input inválido dentro de IFILE */
     fprintf(stderr, "%4d bad include line\n", yylineno);
     yyterminate();
 }
 
-/* Al llegar al EOF de cualquier archivo: hacer pop del stack */
-<<EOF>>    { if(!popfile()) yyterminate(); }
 
-/* Imprimir número de línea al comienzo de cada línea */
+<<EOF>>    { /* Al llegar al EOF de cualquier archivo: hacer pop del stack */
+            if(!popfile()) yyterminate(); }
+
+
 ^.     { fprintf(yyout, "%4d %s", yylineno, yytext); }
 ^\n    { fprintf(yyout, "%4d %s", yylineno++, yytext); }
 \n     { ECHO; yylineno++; }
@@ -60,9 +63,11 @@ main(int argc, char **argv)
         yylex();
 }
 
-/* Abre un nuevo archivo y lo empuja al stack de buffers */
+
 int newfile(char *fn)
 {
+    /* Abre un nuevo archivo y lo empuja al stack de buffers */
+
     FILE *f = fopen(fn, "r");
     struct bufstack *bs = malloc(sizeof(struct bufstack));
 
@@ -84,9 +89,10 @@ int newfile(char *fn)
     return 1;
 }
 
-/* Cierra el archivo actual y restaura el anterior */
+
 int popfile(void)
 {
+    /* Cierra el archivo actual y restaura el anterior */
     struct bufstack *bs = curbs;
     struct bufstack *prevbs;
 
