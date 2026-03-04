@@ -19,3 +19,9 @@ Ejemplo 3
 <img width="398" height="426" alt="image" src="https://github.com/user-attachments/assets/593343b5-c838-42ba-b7f7-e26910b3b852" />
 
 <img width="441" height="437" alt="image" src="https://github.com/user-attachments/assets/ccea2719-f338-4254-9eac-4121bff619f2" />
+
+Ejemplo 4
+
+<img width="624" height="32" alt="image" src="https://github.com/user-attachments/assets/c0a339c3-7af4-4b5f-8418-0c5af736bebc" />
+
+<img width="555" height="435" alt="image" src="https://github.com/user-attachments/assets/0d18e761-d67d-4959-841a-aebe32015ea0" />
