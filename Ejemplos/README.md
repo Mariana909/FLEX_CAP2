@@ -50,13 +50,14 @@ Ejemplo de salida:
 ```
        1       5      31
 ```
+---
 Ejecución:
 
 <img width="625" height="38" alt="image" src="https://github.com/user-attachments/assets/12749146-88de-4347-b2ed-4ffa78c23eee" />
 
 
 <img width="552" height="35" alt="image" src="https://github.com/user-attachments/assets/1bd716cc-d5e5-4b99-9229-5f786b1ab63a" />
----
+
 
 ### fb2-2.l — Contador de palabras (múltiples archivos)
 
@@ -113,6 +114,7 @@ Ejemplo de salida:
 > El programa sigue los `#include` de forma recursiva, numerando las líneas de cada archivo incluido como si fueran parte del flujo principal.
 
 ---
+---
 
 Ejecución:
 
@@ -123,6 +125,7 @@ Ejecución:
 <img width="398" height="426" alt="image" src="https://github.com/user-attachments/assets/593343b5-c838-42ba-b7f7-e26910b3b852" />
 
 <img width="441" height="437" alt="image" src="https://github.com/user-attachments/assets/ccea2719-f338-4254-9eac-4121bff619f2" />
+
 
 ### fb2-4.l — Generador de concordancia de texto
 
