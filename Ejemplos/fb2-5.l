@@ -1,4 +1,4 @@
-/* fb2-5 — C Language Cross-Referencer */
+/* fb2-5 -- C Language Cross-Referencer */
 %option noyywrap nodefault yylineno
 %x COMMENT
 %x IFILE
@@ -9,7 +9,7 @@ EXP    ([Ee][-+]?[0-9]+)                         /* exponente de float */
 ILEN   ([Uu](L|l|LL|ll)?|(L|l|LL|ll)[Uu]?)      /* sufijo de entero */
 
 %{
-/* ----- Tabla de símbolos ----- */
+/* ----- Tabla de s?mbolos ----- */
 struct symbol {
     struct ref *reflist;
     char *name;
@@ -18,7 +18,7 @@ struct symbol {
 struct ref {
     struct ref *next;
     char *filename;
-    int flags;       /* 01 = definición */
+    int flags;       /* 01 = definicion */
     int lineno;
 };
 
@@ -47,17 +47,17 @@ int defining;    /* 1 cuando los nombres que siguen son probablemente definicion
 
 %%
 
-/* ===== COMENTARIOS C ===== */
+ /* ===== COMENTARIOS C ===== */
 "/*"                    { BEGIN(COMMENT); }
 <COMMENT>"*/"           { BEGIN(INITIAL); }
 <COMMENT>([^*]|\n)+|.   /* consumir todo el contenido del comentario */
 <COMMENT><<EOF>>        { printf("%s:%d: Unterminated comment\n",
                             curfilename, yylineno); return 0; }
 
-/* Comentario C++ (extensión común) */
+ /* Comentario C++ (extension comun) */
 "//".*\n
 
-/* ===== KEYWORDS DE DECLARACIÓN — activan 'defining' ===== */
+ /* ===== KEYWORDS DE DECLARACION -- activan 'defining' ===== */
 _Bool       |
 _Complex    |
 _Imaginary  |
@@ -83,7 +83,7 @@ unsigned    |
 void        |
 volatile    { defining = 1; }
 
-/* ===== OTROS KEYWORDS — se ignoran ===== */
+ /* ===== OTROS KEYWORDS -- se ignoran ===== */
 break
 case
 continue
@@ -98,28 +98,28 @@ sizeof
 switch
 while
 
-/* ===== CONSTANTES NUMÉRICAS ===== */
-/* Enteros: octal, decimal, hexadecimal */
-0[0-7]*{ILEN}?
-[1-9][0-9]*{ILEN}?
-0[Xx][0-9a-fA-F]+{ILEN}?
+ /* ===== CONSTANTES NUMERICAS ===== */
+ /* Enteros: octal, decimal, hexadecimal */
+0[0-7]*{ILEN}?	{ /* ignore */ }
+[1-9][0-9]*{ILEN}?	{ /* ignore */ }
+0[Xx][0-9a-fA-F]+{ILEN}?	{ /* ignore */ }
 
-/* Floats decimales */
-([0-9]*\.[0-9]+|[0-9]+\.){EXP}?[flFL]?
-[0-9]+{EXP}[flFL]?
+ /* Floats decimales */
+([0-9]*\.[0-9]+|[0-9]+\.){EXP}?[flFL]?	{ /* ignore */ }
+[0-9]+{EXP}[flFL]?	{ /* ignore */ }
 
-/* Float hexadecimal (exponente con P, no E) */
-0[Xx]([0-9a-fA-F]*\.[0-9a-fA-F]+|[0-9a-fA-F]+\.?)[Pp][-+]?[0-9]+[flFL]?
+ /* Float hexadecimal (exponente con P, no E) */
+0[Xx]([0-9a-fA-F]*\.[0-9a-fA-F]+|[0-9a-fA-F]+\.?)[Pp][-+]?[0-9]+[flFL]?	{ /* ignore */ }
 
-/* ===== CHAR Y STRING LITERALS ===== */
-\'([^'\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})+\'
-L?\"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})*\"
+ /* ===== CHAR Y STRING LITERALS ===== */
+'([^'\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})+'
+L?"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})*"
 
-/* ===== PUNCTUADORES ===== */
-/* Estos tres terminan una definición/declaración */
+ /* ===== PUNCTUADORES ===== */
+ /* Estos tres terminan una definicion/declaracion */
 "{"|"<%"|";"    { defining = 0; }
 
-/* El resto se ignoran */
+ /* El resto se ignoran */
 "["|"]"|"("|")"|"{"|"}"|"."|"->"
 "++"|"--"|"&"|"*"|"+"|"-"|"~"|"!"
 "/"|"%"|"<<"|">>"|"<"|">"|"<="|">="|"=="|"!="|"^"|"|"|"&&"|"||"
@@ -128,28 +128,28 @@ L?\"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})*\"
 ","|"#"|"##"
 "<:"|":>"|"%>"|"%:"|"%:%:"
 
-/* ===== IDENTIFICADORES ===== */
+ /* ===== IDENTIFICADORES ===== */
 ([_a-zA-Z]|{UCN})([_a-zA-Z0-9]|{UCN})*    {
     addref(yylineno, curfilename, yytext, defining);
 }
 
-/* ===== WHITESPACE Y CONTINUACIÓN DE LÍNEA ===== */
+ /* ===== WHITESPACE Y CONTINUACION DE LINEA ===== */
 [ \t\n]+
 \\$
 
-/* ===== DIRECTIVAS PREPROCESSOR (ignoradas excepto #include) ===== */
+ /* ===== DIRECTIVAS PREPROCESSOR (ignoradas excepto #include) ===== */
 "#"" "*if.*\n
 "#"" "*else.*\n
 "#"" "*endif.*\n
 "#"" "*define.*\n
 "#"" "*line.*\n
 
-/* ===== #INCLUDE ===== */
+ /* ===== #INCLUDE ===== */
 ^"#"[ \t]*include[ \t]*[\"<]    { BEGIN IFILE; }
 
 <IFILE>[^>\"]+ {
     { int c;
-      while((c = input()) && c != '\n') ;   /* consume el resto de la línea */
+      while((c = input()) && c != '\n') ;   /* consume el resto de la l?nea */
     }
     newfile(strdup(yytext));
     BEGIN INITIAL;
@@ -162,13 +162,13 @@ L?\"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})*\"
 
 <<EOF>>    { if(!popfile()) yyterminate(); }
 
-/* ===== CARÁCTER INVÁLIDO ===== */
+ /* ===== CARACTER INVALIDO ===== */
 .    { printf("%s:%d: Mystery character '%s'\n",
            curfilename, yylineno, yytext); }
 
 %%
 
-/* ----- Función de hash ----- */
+/* ----- Funcion de hash ----- */
 static unsigned symhash(char *sym)
 {
     unsigned int hash = 0;
