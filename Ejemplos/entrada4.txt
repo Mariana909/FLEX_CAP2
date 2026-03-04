@@ -1,0 +1,3 @@
+#include <entrada.txt>
+#include <entrada2.txt>
+#include <entrada3.txt>
