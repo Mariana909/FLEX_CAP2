@@ -1,89 +1,92 @@
-/* fb2-5 -- C Language Cross-Referencer */
+/* fb2-5 C cross-ref */
+
 %option noyywrap nodefault yylineno
+
 %x COMMENT
 %x IFILE
 
-/* Patrones nombrados reutilizables */
-UCN    (\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})   /* Universal Character Name */
-EXP    ([Ee][-+]?[0-9]+)                         /* exponente de float */
-ILEN   ([Uu](L|l|LL|ll)?|(L|l|LL|ll)[Uu]?)      /* sufijo de entero */
-
+/* some complex named patterns */
+/* Universal Character Name */
+UCN	(\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})
+/* float exponent */
+EXP	([Ee][-+]?[0-9]+)
+/* integer length */
+ILEN    ([Uu](L|l|LL|ll)?|(L|l|LL|ll)[Uu]?)
+/* the symbol table */
 %{
-/* ----- Tabla de s?mbolos ----- */
-struct symbol {
+  struct symbol {		/* a variable name */
     struct ref *reflist;
     char *name;
-};
+  };
 
-struct ref {
+  struct ref {
     struct ref *next;
     char *filename;
-    int flags;       /* 01 = definicion */
+    int flags;			/* 01 - definition */
     int lineno;
-};
+  };
 
-#define NHASH 9997
-struct symbol symtab[NHASH];
+  /* simple symtab of fixed size */
+  #define NHASH 9997
+  struct symbol symtab[NHASH];
 
-struct symbol *lookup(char*);
-void addref(int, char*, char*, int);
+  struct symbol *lookup(char*);
+  void addref(int, char*, char*, int);
 
-char *curfilename;
+  char *curfilename;		/* name of current input file */
 
-/* ----- Stack de archivos include ----- */
-struct bufstack {
-    struct bufstack *prev;
-    YY_BUFFER_STATE bs;
-    int lineno;
-    char *filename;
-    FILE *f;
-} *curbs;
+  int defining;			/* names are probably definitions */
 
-int newfile(char *fn);
-int popfile(void);
+/* include file stack */  
+  struct bufstack {
+    struct bufstack *prev;	/* previous entry */
+    YY_BUFFER_STATE bs;		/* saved buffer */
+    int lineno;			/* saved line number in this file */
+    char *filename;		/* name of this file */
+    FILE *f;			/* current file */
+  } *curbs;
 
-int defining;    /* 1 cuando los nombres que siguen son probablemente definiciones */
+  int newfile(char *fn);
+  int popfile(void);
+
 %}
-
 %%
+ /* comments */
+"/*"           { BEGIN(COMMENT) ; }
+<COMMENT>"*/"  { BEGIN(INITIAL); }
+<COMMENT>([^*]|\en)+|.
 
- /* ===== COMENTARIOS C ===== */
-"/*"                    { BEGIN(COMMENT); }
-<COMMENT>"*/"           { BEGIN(INITIAL); }
-<COMMENT>([^*]|\n)+|.   /* consumir todo el contenido del comentario */
-<COMMENT><<EOF>>        { printf("%s:%d: Unterminated comment\n",
-                            curfilename, yylineno); return 0; }
-
- /* Comentario C++ (extension comun) */
+ /* C++ comment, a common extension */
 "//".*\n
 
- /* ===== KEYWORDS DE DECLARACION -- activan 'defining' ===== */
-_Bool       |
-_Complex    |
-_Imaginary  |
-auto        |
-char        |
-const       |
-double      |
-enum        |
-extern      |
-float       |
-inline      |
-int         |
-long        |
-register    |
-restrict    |
-short       |
-signed      |
-static      |
-struct      |
-typedef     |
-union       |
-unsigned    |
-void        |
-volatile    { defining = 1; }
+ /* declaration keywords */
+_Bool |
+_Complex |
+_Imaginary |
+auto |
+char |
+const |
+double |
+enum |
+extern |
+float |
+inline |
+int |
+long |
+register |
+restrict |
+short |
+signed |
+static |
+struct |
+typedef |
+union |
+unsigned |
+void |
+volatile { defining = 1; }
 
- /* ===== OTROS KEYWORDS -- se ignoran ===== */
+
+ /* keywords */
 break
 case
 continue
@@ -98,226 +101,262 @@ sizeof
 switch
 while
 
- /* ===== CONSTANTES NUMERICAS ===== */
- /* Enteros: octal, decimal, hexadecimal */
-0[0-7]*{ILEN}?	{ /* ignore */ }
-[1-9][0-9]*{ILEN}?	{ /* ignore */ }
-0[Xx][0-9a-fA-F]+{ILEN}?	{ /* ignore */ }
+ /* constants */
 
- /* Floats decimales */
-([0-9]*\.[0-9]+|[0-9]+\.){EXP}?[flFL]?	{ /* ignore */ }
-[0-9]+{EXP}[flFL]?	{ /* ignore */ }
+ /* integers */
+0[0-7]*{ILEN}?
+[1-9][0-9]*{ILEN}?
+0[Xx][0-9a-fA-F]+{ILEN}?
 
- /* Float hexadecimal (exponente con P, no E) */
-0[Xx]([0-9a-fA-F]*\.[0-9a-fA-F]+|[0-9a-fA-F]+\.?)[Pp][-+]?[0-9]+[flFL]?	{ /* ignore */ }
+ /* decimal float */
+([0-9]*\.[0-9]+|[0-9]+\.){EXP}?[flFL]?
+[0-9]+{EXP}[flFL]?
 
- /* ===== CHAR Y STRING LITERALS ===== */
-'([^'\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})+'
-L?"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})*"
+ /* hex float */
+0[Xx]([0-9a-fA-F]*\.[0-9a-fA-F]+|[0-9a-fA-F]+\.?)[Pp][-+]?[0-9]+[flFL]?
 
- /* ===== PUNCTUADORES ===== */
- /* Estos tres terminan una definicion/declaracion */
-"{"|"<%"|";"    { defining = 0; }
 
- /* El resto se ignoran */
+ /* char const */
+\'([^'\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})+\'
+
+ /* string literal */
+L?\"([^\"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})+\"
+
+ /* punctuators */
+"{"|"<%"|";"         { defining = 0; }
+
+
 "["|"]"|"("|")"|"{"|"}"|"."|"->"
 "++"|"--"|"&"|"*"|"+"|"-"|"~"|"!"
 "/"|"%"|"<<"|">>"|"<"|">"|"<="|">="|"=="|"!="|"^"|"|"|"&&"|"||"
 "?"|":"|";"|"..."
-"="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
+"="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^=""|="
 ","|"#"|"##"
 "<:"|":>"|"%>"|"%:"|"%:%:"
 
- /* ===== IDENTIFICADORES ===== */
-([_a-zA-Z]|{UCN})([_a-zA-Z0-9]|{UCN})*    {
-    addref(yylineno, curfilename, yytext, defining);
-}
+ /* identifier */
+([_a-zA-Z]|{UCN})([_a-zA-Z0-9]|{UCN})* {
+                         addref(yylineno, curfilename, yytext, defining); }
 
- /* ===== WHITESPACE Y CONTINUACION DE LINEA ===== */
+ /* white space */
 [ \t\n]+
+ /* continued line */
 \\$
 
- /* ===== DIRECTIVAS PREPROCESSOR (ignoradas excepto #include) ===== */
+ /* some preprocessor stuff */
 "#"" "*if.*\n
 "#"" "*else.*\n
 "#"" "*endif.*\n
 "#"" "*define.*\n
 "#"" "*line.*\n
 
- /* ===== #INCLUDE ===== */
-^"#"[ \t]*include[ \t]*[\"<]    { BEGIN IFILE; }
+ /* recognize an include */
+^"#"[ \t]*include[ \t]*[\"<] { BEGIN IFILE; }
 
-<IFILE>[^>\"]+ {
-    { int c;
-      while((c = input()) && c != '\n') ;   /* consume el resto de la l?nea */
-    }
-    newfile(strdup(yytext));
-    BEGIN INITIAL;
-}
+<IFILE>[^>\"]+  { 
+                       { int c;
+			 while((c = input()) && c != '\n') ;
+		       }
+		       newfile(strdup(yytext));
+		       BEGIN INITIAL;
+                }
 
-<IFILE>.|\n    {
-    fprintf(stderr, "%s:%d bad include line\n", curfilename, yylineno);
-    BEGIN INITIAL;
-}
+<IFILE>.|\n     { fprintf(stderr, "%s:%d bad include line\n",
+			  curfilename, yylineno);
+                  BEGIN INITIAL;
+                }
 
-<<EOF>>    { if(!popfile()) yyterminate(); }
+<<EOF>>         { if(!popfile()) yyterminate(); }
 
- /* ===== CARACTER INVALIDO ===== */
-.    { printf("%s:%d: Mystery character '%s'\n",
-           curfilename, yylineno, yytext); }
-
+ /* invalid character */
+.               { printf("%s:%d: Mystery character '%s'\n",
+			 curfilename, yylineno, yytext);
+                }
 %%
 
-/* ----- Funcion de hash ----- */
-static unsigned symhash(char *sym)
+/* hash a symbol */
+static unsigned
+symhash(char *sym)
 {
-    unsigned int hash = 0;
-    unsigned c;
-    while(c = *sym++) hash = hash * 9 ^ c;
-    return hash;
+  unsigned int hash = 0;
+  unsigned c;
+
+  while(c = *sym++) hash = hash*9 ^ c;
+
+  return hash;
 }
 
-/* ----- Buscar o crear entrada en la tabla ----- */
-struct symbol *lookup(char *sym)
+struct symbol *
+lookup(char* sym)
 {
-    struct symbol *sp = &symtab[symhash(sym) % NHASH];
-    int scount = NHASH;
+  struct symbol *sp = &symtab[symhash(sym)%NHASH];
+  int scount = NHASH;		/* how many have we looked at */
 
-    while(--scount >= 0) {
-        if(sp->name && !strcmp(sp->name, sym)) return sp;
-        if(!sp->name) {
-            sp->name = strdup(sym);
-            sp->reflist = 0;
-            return sp;
-        }
-        if(++sp >= symtab + NHASH) sp = symtab;
+  while(--scount >= 0) {
+    if(sp->name && !strcmp(sp->name, sym)) { return sp; }
+
+    if(!sp->name) {		/* new entry */
+      sp->name = strdup(sym);
+      sp->reflist = 0;
+      return sp;
     }
-    fputs("symbol table overflow\n", stderr);
-    abort();
+
+    if(++sp >= symtab+NHASH) sp = symtab; /* try the next entry */
+  }
+  fputs("symbol table overflow\n", stderr);
+  abort(); /* tried them all, table is full */
+
 }
 
-/* ----- Agregar referencia ----- */
-void addref(int lineno, char *filename, char *word, int flags)
+void
+addref(int lineno, char *filename, char *word, int flags)
 {
-    struct ref *r;
-    struct symbol *sp = lookup(word);
+  struct ref *r;
+  struct symbol *sp = lookup(word);
 
-    if(sp->reflist &&
-       sp->reflist->lineno == lineno &&
-       sp->reflist->filename == filename) return;
+  /* don't do dups */
+  if(sp->reflist &&
+     sp->reflist->lineno == lineno && sp->reflist->filename == filename) return;
 
-    r = malloc(sizeof(struct ref));
-    if(!r) { fputs("out of space\n", stderr); abort(); }
-
-    r->next     = sp->reflist;
-    r->filename = filename;
-    r->lineno   = lineno;
-    r->flags    = flags;
-    sp->reflist = r;
+  r = malloc(sizeof(struct ref));
+  if(!r) {fputs("out of space\n", stderr); abort(); }
+  r->next = sp->reflist;
+  r->filename = filename;
+  r->lineno = lineno;
+  r->flags = flags;
+  sp->reflist = r;
 }
 
-/* ----- Comparador para qsort ----- */
-static int symcompare(const void *xa, const void *xb)
+/* print the references
+ * sort the table alphabetically
+ * then flip each entry's reflist to get it into forward order
+ * and print it out 
+ */
+
+/* aux function for sorting */
+static int
+symcompare(const void *xa, const void *xb)
 {
-    const struct symbol *a = xa;
-    const struct symbol *b = xb;
-    if(!a->name) { if(!b->name) return 0; return 1; }
-    if(!b->name) return -1;
-    return strcmp(a->name, b->name);
+  const struct symbol *a = xa;
+  const struct symbol *b = xb;
+
+  if(!a->name) {
+    if(!b->name) return 0;	/* both empty */
+    return 1;			/* put empties at the end */
+  }
+  if(!b->name) return -1;
+  return strcmp(a->name, b->name);
 }
 
-/* ----- Imprimir referencias (con * para definiciones) ----- */
-void printrefs()
+void
+printrefs()
 {
-    struct symbol *sp;
-    qsort(symtab, NHASH, sizeof(struct symbol), symcompare);
+  struct symbol *sp;
 
-    for(sp = symtab; sp->name && sp < symtab + NHASH; sp++) {
-        char *prevfn = NULL;
+  qsort(symtab, NHASH, sizeof(struct symbol), symcompare); /* sort the symbol table */
 
-        struct ref *rp  = sp->reflist;
-        struct ref *rpp = 0;
-        struct ref *rpn;
-        do {
-            rpn      = rp->next;
-            rp->next = rpp;
-            rpp      = rp;
-            rp       = rpn;
-        } while(rp);
+  for(sp = symtab; sp->name && sp < symtab+NHASH; sp++) {
+    char *prevfn = NULL;	/* last printed filename, to skip dups */
 
-        printf("%10s", sp->name);
-        for(rp = rpp; rp; rp = rp->next) {
-            if(rp->filename == prevfn)
-                printf(" %d", rp->lineno);
-            else {
-                printf(" %s:%d", rp->filename, rp->lineno);
-                prevfn = rp->filename;
-            }
-            if(rp->flags & 01) printf("*");   /* marca definiciones con * */
-        }
-        printf("\n");
+    /* reverse the list of references */
+    struct ref *rp = sp->reflist;
+    struct ref *rpp = 0;	/* previous ref */
+    struct ref *rpn;	/* next ref */
+
+    do {
+      rpn = rp->next;
+      rp->next = rpp;
+      rpp = rp;
+      rp = rpn;
+    } while(rp);
+
+    /* now print the word and its references */
+    printf("%10s", sp->name);
+    for(rp = rpp; rp; rp = rp->next) {
+      if(rp->filename == prevfn) {
+	printf(" %d", rp->lineno);
+      } else {
+	printf(" %s:%d", rp->filename, rp->lineno);
+	prevfn = rp->filename;
+      }
+      if(rp->flags & 01) printf("*");
     }
+    printf("\n");
+  }
 }
 
-/* ----- Abrir nuevo archivo (push al stack) ----- */
-int newfile(char *fn)
-{
-    FILE *f = fopen(fn, "r");
-    struct bufstack *bs = malloc(sizeof(struct bufstack));
-
-    if(!f)  { perror(fn); return 0; }
-    if(!bs) { perror("malloc"); exit(1); }
-
-    if(curbs) curbs->lineno = yylineno;
-    bs->prev     = curbs;
-    bs->bs       = yy_create_buffer(f, YY_BUF_SIZE);
-    bs->f        = f;
-    bs->filename = fn;
-
-    yy_switch_to_buffer(bs->bs);
-    curbs       = bs;
-    yylineno    = 1;
-    curfilename = fn;
-    return 1;
-}
-
-/* ----- Cerrar archivo actual (pop del stack) ----- */
-int popfile(void)
-{
-    struct bufstack *bs = curbs;
-    struct bufstack *prevbs;
-
-    if(!bs) return 0;
-
-    fclose(bs->f);
-    yy_delete_buffer(bs->bs);
-
-    prevbs = bs->prev;
-    free(bs);
-    if(!prevbs) return 0;
-
-    yy_switch_to_buffer(prevbs->bs);
-    curbs       = prevbs;
-    yylineno    = curbs->lineno;
-    curfilename = curbs->filename;
-    return 1;
-}
-
-/* ----- Main ----- */
-int main(argc, argv)
+int
+main(argc, argv)
 int argc;
 char **argv;
 {
-    int i;
+  int i;
 
-    if(argc < 2) {
-        fprintf(stderr, "need filename\n");
-        return 1;
-    }
+  if(argc < 2) {
+    fprintf(stderr, "need filename\n");
+    return 1;
+  }
+  for(i = 1; i < argc; i++) {
+    if(newfile(argv[i])) yylex();
+  }
 
-    for(i = 1; i < argc; i++)
-        if(newfile(argv[i])) yylex();
+  printrefs();
+  return 0;
+}
 
-    printrefs();
+/* nested input files */
+int
+  newfile(char *fn)
+{
+  FILE *f = fopen(fn, "r");
+  struct bufstack *bs;
+
+  /* check if no file */
+  if(!f) {
+    perror(fn);
     return 0;
+  }
+
+  bs = malloc(sizeof(struct bufstack));
+  if(!bs) { perror("malloc"); exit(1); }
+
+  /* remember state */
+  if(curbs) curbs->lineno = yylineno;
+
+  bs->prev = curbs;
+  bs->f = f;
+  bs->filename = fn;
+
+  /* set up current entry */
+  bs->bs = yy_create_buffer(f, YY_BUF_SIZE);
+  yy_switch_to_buffer(bs->bs);
+  curbs = bs;
+  yylineno = 1;
+  curfilename = fn;
+  return 1;
+}
+
+int
+  popfile(void)
+{
+  struct bufstack *bs = curbs;
+  struct bufstack *prevbs;
+
+  if(!bs) return 0;
+
+  /* get rid of current entry
+  fclose(bs->f);
+  yy_delete_buffer(bs->bs);
+
+  /* switch back to previous */
+  prevbs = bs->prev;
+  free(bs);
+
+  if(!prevbs) return 0;
+
+  yy_switch_to_buffer(prevbs->bs);
+  curbs = prevbs;
+  yylineno = curbs->lineno;
+  curfilename = curbs->filename;
+  return 1; 
 }
