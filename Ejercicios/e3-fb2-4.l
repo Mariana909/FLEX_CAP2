@@ -90,6 +90,27 @@ static unsigned symhash(char *sym)
     return hash;
 }
 
+void rehash() {
+    int new_nhash = nhash * 2;
+    struct symbol *new_symtab = calloc(new_nhash * sizeof(struct symbol));
+    if(!new_symtab) { fputs("out of space\n", stderr); abort(); }
+    
+    for(int i = 0; i < nhash; i++) {
+    if(symtab[i].name != NULL) {
+        struct symbol *sp = &new_symtab[symhash(symtab[i].name) % new_nhash];
+    while(sp->name) {
+        if(++sp >= new_symtab + new_nhash) sp = new_symtab;  /* wrap around */
+    }
+    // cajón libre encontrado, copiar el símbolo
+    sp->name = symtab[i].name;
+    sp->reflist = symtab[i].reflist;
+        }
+       }
+    free(symtab);
+    symtab = new_symtab;
+    nhash = new_nhash;
+}
+
 /* ----- Buscar o crear una entrada en la tabla ----- */
 struct symbol *lookup(char *sym)
 {
@@ -106,7 +127,7 @@ struct symbol *lookup(char *sym)
         if(++sp >= symtab + NHASH) sp = symtab;  /* wrap around */
     }
     fputs("symbol table overflow\n", stderr);
-    abort();
+    rehash();
 }
 
 /* ----- Agregar una referencia a un símbolo ----- */
