@@ -77,7 +77,8 @@ gcc lex.yy.c -o e3-fb2-4.l
 
 Ejemplo de salida:
 
-<!-- Agregar captura de pantalla aquí -->
+<img width="580" height="378" alt="image" src="https://github.com/user-attachments/assets/e2e7aa2a-91a0-487e-a3d8-af0e37874b76" />
+
 
 ---
 
