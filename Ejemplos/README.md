@@ -161,7 +161,9 @@ gcc lex.yy.c -o fb2-5
 
 Ejemplo de salida:
 
-<!-- Agregar captura de pantalla aquí -->
+<img width="635" height="320" alt="image" src="https://github.com/user-attachments/assets/83bb9721-002a-430b-b6b1-a2ccaf53e441" />
+
+
 
 > Cada línea muestra un identificador seguido de los archivos y números de línea donde aparece. El símbolo `*` marca las definiciones.
 
