@@ -1,4 +1,4 @@
-/* fb2-4 — Text concordance generator */
+/* fb2-4 -- Text concordance generator */
 %option noyywrap nodefault yylineno case-insensitive
 
 %{
@@ -26,7 +26,7 @@ char *curfilename;               /* nombre del archivo que se está leyendo */
 
 %%
 
-/* Palabras comunes: se ignoran (acción = | significa "misma acción que la siguiente") */
+ /* Palabras comunes: se ignoran (acción = | significa "misma acción que la siguiente") */
 a       |
 an      |
 and     |
@@ -45,12 +45,12 @@ or      |
 that    |
 the     |
 this    |
-to      /* ignore — no hace nada */
+to      /* ignore -- no hace nada */
 
-/* Palabra normal (incluye 's y 't al final, ej: owner's, can't) */
-[a-z]+(\`(s|t))?    { addref(yylineno, curfilename, yytext, 0); }
+ /* Palabra normal (incluye 's y 't al final, ej: owner's, can't) */
+[a-z]+(\'(s|t))?    { addref(yylineno, curfilename, yytext, 0); }
 
-/* Ignorar cualquier otro carácter */
+ /* Ignorar cualquier otro carácter */
 .|\n
 
 %%
