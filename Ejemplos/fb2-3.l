@@ -25,7 +25,7 @@ int popfile(void);
                                     BEGIN IFILE; }
 
 
-<IFILE>[^ \t\n\">\]+    { 
+<IFILE>[^ \t\n\">]+    { 
     /* En estado IFILE: lee el nombre del archivo */
     { int c;
       while((c = input()) && c != '\n') ;   /* consume el resto de la línea */
