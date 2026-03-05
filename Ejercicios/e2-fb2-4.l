@@ -29,7 +29,7 @@ char *curfilename;               /* nombre del archivo que se está leyendo */
 
 %%
 
-/* Palabras comunes en español: se ignoran (acción = | significa "misma acción que la siguiente") */
+	/* Palabras comunes en español: se ignoran (acción = | significa "misma acción que la siguiente") */
 el      |
 la      |
 los     |
@@ -72,15 +72,15 @@ le      |
 me      |
 te      /* ignore — no hace nada */
 
-/* Palabra normal (incluye 's y 't al final, ej: owner's, can't) */
+	/* Palabra normal (incluye 's y 't al final, ej: owner's, can't) */
 [a-z]+(\`(s|t))?    { addref(yylineno, curfilename, yytext, 0); }
 
-/* Ignorar cualquier otro carácter */
+	/* Ignorar cualquier otro carácter */
 .|\n
 
 %%
 
-/* ----- Función de hash ----- */
+	/* ----- Función de hash ----- */
 static unsigned symhash(char *sym)
 {
     unsigned int hash = 0;
@@ -89,7 +89,7 @@ static unsigned symhash(char *sym)
     return hash;
 }
 
-/* ----- Buscar o crear una entrada en la tabla ----- */
+	/* ----- Buscar o crear una entrada en la tabla ----- */
 struct symbol *lookup(char *sym)
 {
     struct symbol *sp = &symtab[symhash(sym) % NHASH];
@@ -108,7 +108,7 @@ struct symbol *lookup(char *sym)
     abort();
 }
 
-/* ----- Agregar una referencia a un símbolo ----- */
+	/* ----- Agregar una referencia a un símbolo ----- */
 void addref(int lineno, char *filename, char *word, int flags)
 {
     struct ref *r;
@@ -129,7 +129,7 @@ void addref(int lineno, char *filename, char *word, int flags)
     sp->reflist = r;
 }
 
-/* ----- Comparador para qsort ----- */
+	/* ----- Comparador para qsort ----- */
 static int symcompare(const void *xa, const void *xb)
 {
     const struct symbol *a = xa;
@@ -139,7 +139,7 @@ static int symcompare(const void *xa, const void *xb)
     return strcmp(a->name, b->name);
 }
 
-/* ----- Imprimir la concordancia ordenada ----- */
+	/* ----- Imprimir la concordancia ordenada ----- */
 void printrefs()
 {
     struct symbol *sp;
@@ -173,7 +173,7 @@ void printrefs()
     }
 }
 
-/* ----- Main ----- */
+	/* ----- Main ----- */
 main(argc, argv)
 int argc;
 char **argv;
