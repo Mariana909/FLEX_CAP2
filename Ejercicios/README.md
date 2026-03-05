@@ -3,9 +3,9 @@
 ## Estructura del repositorio
 
 ```
-├── ejercicio1.l     # fb2-3.l modificado: patrones más eficientes
-├── ejercicio2.l     # fb2-4.l modificado: concordancia sin distinguir mayúsculas
-├── ejercicio3.l     # fb2-4.l modificado: tabla de símbolos de tamaño variable
+├── e1-fb2-3.l     # fb2-3.l modificado: patrones más eficientes
+├── e2-fb2-4.l     # fb2-4.l modificado: concordancia sin distinguir mayúsculas
+├── e3-fb2-4.l     # fb2-4.l modificado: tabla de símbolos de tamaño variable
 ├── entrada.txt      # Poema "Poema del otoño" - Rubén Darío
 ├── entrada2.txt     # Poema "Infancia" - José Asunción Silva
 ├── entrada3.txt     # Poema "Reír Llorando" - Juan de Dios Peza
@@ -31,12 +31,12 @@ sudo apt install flex gcc
 
 ## Compilación y ejecución
 
-### ejercicio1.l — Patrones más eficientes en fb2-3
+### e1-fb2-3.l — Patrones más eficientes en fb2-3
 
 ```bash
-flex ejercicio1.l
-gcc lex.yy.c -o ejercicio1
-./ejercicio1 entrada4.txt
+flex e1-fb2-3.l
+gcc lex.yy.c -o e1-fb2-3.l
+./e1-fb2-3.l entrada4.txt
 ```
 
 Ejemplo de salida:
@@ -49,12 +49,12 @@ Ejemplo de salida:
 
 ---
 
-### ejercicio2.l — Concordancia sin distinguir mayúsculas
+### e2-fb2-4.l — Concordancia sin distinguir mayúsculas
 
 ```bash
-flex ejercicio2.l
-gcc lex.yy.c -o ejercicio2
-./ejercicio2 entrada.txt
+flex e2-fb2-4.l
+gcc lex.yy.c -o e2-fb2-4.l
+./e2-fb2-4.l entrada.txt
 ```
 
 Ejemplo de salida:
@@ -63,12 +63,12 @@ Ejemplo de salida:
 
 ---
 
-### ejercicio3.l — Concordancia con tabla de tamaño variable
+### e3-fb2-4.l — Concordancia con tabla de tamaño variable
 
 ```bash
-flex ejercicio3.l
-gcc lex.yy.c -o ejercicio3
-./ejercicio3 entrada.txt entrada2.txt entrada3.txt
+flex e3-fb2-4.l
+gcc lex.yy.c -o e3-fb2-4.l
+./e3-fb2-4.l entrada.txt entrada2.txt entrada3.txt
 ```
 
 Ejemplo de salida:
