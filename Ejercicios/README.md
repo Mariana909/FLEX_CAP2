@@ -49,6 +49,9 @@ Ejemplo de salida:
 
 ---
 
+<img width="417" height="251" alt="image" src="https://github.com/user-attachments/assets/acea6f5c-0fdd-493d-9aad-4298d744a132" />
+
+
 ### e2-fb2-4.l — Concordancia sin distinguir mayúsculas
 
 ```bash
