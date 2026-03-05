@@ -92,7 +92,7 @@ static unsigned symhash(char *sym)
 
 void rehash() {
     int new_nhash = nhash * 2;
-    struct symbol *new_symtab = calloc(new_nhash * sizeof(struct symbol));
+    struct symbol *new_symtab = calloc(new_nhash, sizeof(struct symbol));
     if(!new_symtab) { fputs("out of space\n", stderr); abort(); }
     
     for(int i = 0; i < nhash; i++) {
@@ -114,8 +114,8 @@ void rehash() {
 /* ----- Buscar o crear una entrada en la tabla ----- */
 struct symbol *lookup(char *sym)
 {
-    struct symbol *sp = &symtab[symhash(sym) % NHASH];
-    int scount = NHASH;
+    struct symbol *sp = &symtab[symhash(sym) % nhash];
+    int scount = nhash;
 
     while(--scount >= 0) {
         if(sp->name && !strcasecmp(sp->name, sym)) return sp;  /* encontrado */
@@ -124,10 +124,11 @@ struct symbol *lookup(char *sym)
             sp->reflist = 0;
             return sp;
         }
-        if(++sp >= symtab + NHASH) sp = symtab;  /* wrap around */
+        if(++sp >= symtab + nhash) sp = symtab;  /* wrap around */
     }
     fputs("symbol table overflow\n", stderr);
     rehash();
+    return lookup(sym);
 }
 
 /* ----- Agregar una referencia a un símbolo ----- */
@@ -165,9 +166,9 @@ static int symcompare(const void *xa, const void *xb)
 void printrefs()
 {
     struct symbol *sp;
-    qsort(symtab, NHASH, sizeof(struct symbol), symcompare);
+    qsort(symtab, nhash, sizeof(struct symbol), symcompare);
 
-    for(sp = symtab; sp->name && sp < symtab + NHASH; sp++) {
+    for(sp = symtab; sp->name && sp < symtab + nhash; sp++) {
         char *prevfn = NULL;
 
         /* invertir la lista (fue construida al revés) */
@@ -201,12 +202,12 @@ int argc;
 char **argv;
 {
     int i;
-
+    symtab = malloc(nhash * sizeof(struct symbol));
+    if(!symtab) { fputs("out of space\n", stderr); abort(); }
     if(argc < 2) {
         curfilename = "(stdin)";
         yylineno = 1;
-        symtab = malloc(nhash * sizeof(struct symbol));
-        if(!symtab) { fputs("out of space\n", stderr); abort(); }
+       
         yylex();
     } else {
         for(i = 1; i < argc; i++) {
@@ -215,8 +216,6 @@ char **argv;
             curfilename = argv[i];
             yyrestart(f);
             yylineno = 1;
-            symtab = malloc(nhash * sizeof(struct symbol));
-            if(!symtab) { fputs("out of space\n", stderr); abort(); }
             yylex();
             fclose(f);
         }
