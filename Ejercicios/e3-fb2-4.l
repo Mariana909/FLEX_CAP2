@@ -202,7 +202,7 @@ int argc;
 char **argv;
 {
     int i;
-    symtab = malloc(nhash * sizeof(struct symbol));
+    symtab = calloc(nhash, sizeof(struct symbol));
     if(!symtab) { fputs("out of space\n", stderr); abort(); }
     if(argc < 2) {
         curfilename = "(stdin)";
