@@ -88,7 +88,7 @@ Ejemplo de salida:
 
 El `.` en Flex nunca hace match con el salto de línea `\n`, por lo que `^.*\n` no puede capturar una línea completa por sí solo.
 
-Pero el problema más importante es otro: Flex siempre le da prioridad a la regla que captura más caracteres. Si se usara `^.*\n` como regla general, esta se tragaría toda la línea de un `#include` antes de que la regla específica pudiera detectarla, y el programa nunca procesaría los archivos incluidos.
+Además Flex siempre le da prioridad a la coincidencia más larga. Si se usara `^.*\n` como regla general, esta tomaría toda la línea de un `#include` antes de que la regla específica pudiera detectarla, y el programa nunca procesaría los archivos incluidos.
 
 La solución es usar una combinación de patrones que excluya las líneas que empiezan con `#`:
 
@@ -105,7 +105,7 @@ La solución es usar una combinación de patrones que excluya las líneas que em
 
 Se hacen dos cambios en `fb2-4.l`:
 
-**1. En `symhash()`**, se convierte cada carácter a minúscula antes de calcular su posición en la tabla, para que "Amor" y "amor" vayan al mismo lugar:
+**1. En `symhash()`**, se convierte cada carácter a minúscula antes de calcular su posición en la tabla, para que palabras como "Flex" y "flex" vayan al mismo lugar:
 
 ```c
 while(c = tolower(*sym++)) hash = hash * 9 ^ c;
@@ -117,7 +117,7 @@ while(c = tolower(*sym++)) hash = hash * 9 ^ c;
 if(sp->name && !strcasecmp(sp->name, sym)) return sp;
 ```
 
-Además se ajustan las palabras comunes ignoradas al español, ya que las entradas son poemas en ese idioma.
+Además se ajustan las palabras comunes ignoradas al español, ya que las entradas se encuentran en español.
 
 ---
 
