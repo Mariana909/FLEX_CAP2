@@ -1,10 +1,7 @@
-/* fb2-4 — Text concordance generator */
+/* fb2-4 -- Text concordance generator */
 %option noyywrap nodefault yylineno case-insensitive
 
 %{
-#include <ctype.h>
-#include <string.h>
-
 /* ----- Estructuras de datos ----- */
 struct symbol {
     char *name;           /* la palabra */
@@ -29,74 +26,52 @@ char *curfilename;               /* nombre del archivo que se está leyendo */
 
 %%
 
-	/* Palabras comunes en español: se ignoran (acción = | significa "misma acción que la siguiente") */
-el      |
-la      |
-los     |
-las     |
-un      |
-una     |
-unos    |
-unas    |
+ /* Palabras comunes: se ignoran (acción = | significa "misma acción que la siguiente") */
 a       |
-de      |
-en      |
-con     |
-por     |
-para    |
-sin     |
-sobre   |
-entre   |
-hasta   |
-desde   |
-hacia   |
-y       |
-o       |
-u       |
-e       |
-ni      |
-que     |
-si      |
-pero    |
-mas     |
-aunque  |
-como    |
-cuando  |
-yo      |
-tu      |
-se      |
-nos     |
-les     |
-lo      |
-le      |
-me      |
-te      /* ignore — no hace nada */
+an      |
+and     |
+are     |
+as      |
+at      |
+be      |
+but     |
+for     |
+in      |
+is      |
+it      |
+of      |
+on      |
+or      |
+that    |
+the     |
+this    |
+to      /* ignore -- no hace nada */
 
-	/* Palabra normal (incluye 's y 't al final, ej: owner's, can't) */
-[a-z]+(\`(s|t))?    { addref(yylineno, curfilename, yytext, 0); }
+ /* Palabra normal (incluye 's y 't al final, ej: owner's, can't) */
+[a-z]+(\'(s|t))?    { addref(yylineno, curfilename, yytext, 0); }
 
-	/* Ignorar cualquier otro carácter */
+ /* Ignorar cualquier otro carácter */
 .|\n
 
 %%
 
-	/* ----- Función de hash ----- */
+/* ----- Función de hash ----- */
 static unsigned symhash(char *sym)
 {
     unsigned int hash = 0;
     unsigned c;
-    while(c = tolower(*sym++)) hash = hash * 9 ^ c;
+    while(c = *sym++) hash = hash * 9 ^ c;
     return hash;
 }
 
-	/* ----- Buscar o crear una entrada en la tabla ----- */
+/* ----- Buscar o crear una entrada en la tabla ----- */
 struct symbol *lookup(char *sym)
 {
     struct symbol *sp = &symtab[symhash(sym) % NHASH];
     int scount = NHASH;
 
     while(--scount >= 0) {
-        if(sp->name && !strcasecmp(sp->name, sym)) return sp;  /* encontrado */
+        if(sp->name && !strcmp(sp->name, sym)) return sp;  /* encontrado */
         if(!sp->name) {                                      /* entrada libre */
             sp->name = strdup(sym);
             sp->reflist = 0;
@@ -108,7 +83,7 @@ struct symbol *lookup(char *sym)
     abort();
 }
 
-	/* ----- Agregar una referencia a un símbolo ----- */
+/* ----- Agregar una referencia a un símbolo ----- */
 void addref(int lineno, char *filename, char *word, int flags)
 {
     struct ref *r;
@@ -129,7 +104,7 @@ void addref(int lineno, char *filename, char *word, int flags)
     sp->reflist = r;
 }
 
-	/* ----- Comparador para qsort ----- */
+/* ----- Comparador para qsort ----- */
 static int symcompare(const void *xa, const void *xb)
 {
     const struct symbol *a = xa;
@@ -139,7 +114,7 @@ static int symcompare(const void *xa, const void *xb)
     return strcmp(a->name, b->name);
 }
 
-	/* ----- Imprimir la concordancia ordenada ----- */
+/* ----- Imprimir la concordancia ordenada ----- */
 void printrefs()
 {
     struct symbol *sp;
@@ -173,7 +148,7 @@ void printrefs()
     }
 }
 
-	/* ----- Main ----- */
+/* ----- Main ----- */
 main(argc, argv)
 int argc;
 char **argv;
